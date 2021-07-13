@@ -142,8 +142,7 @@ namespace FromAToBTests
             var messages = new ConcurrentBag<string>();
             var originalFirstMessage = faker.Sentences(1);
             var originalSecondMessage = faker.Sentences(1);
-            var firstBytes = Encoding.UTF8.GetBytes(originalFirstMessage);
-            var secondBytes = Encoding.UTF8.GetBytes(originalSecondMessage);
+            var bytes = Encoding.UTF8.GetBytes(originalSecondMessage);
 
             var httpHandler = new Mock<HttpMessageHandler>();
 
@@ -165,7 +164,7 @@ namespace FromAToBTests
 
             using var client = new HttpClient(httpHandler.Object);
 
-            await using var memoryStream = new MemoryStream(secondBytes);
+            await using var memoryStream = new MemoryStream(bytes);
 
             var source = Source
                 .FromStream(memoryStream, (int) memoryStream.Length, 0)
