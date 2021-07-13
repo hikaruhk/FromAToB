@@ -1,12 +1,12 @@
 # FromAToB
 
-A simple library that will allow you to move data from one or many data sources to one or many destinations. This project is mostly created to increase my knowledge with [Rx](https://github.com/dotnet/reactive)).
+A simple library that will allow you to move data from one or many data sources to one or many destinations. This project is mostly created to increase my knowledge with [Rx](https://github.com/dotnet/reactive).
 
 How to use? (more examples comming soon)
 
 ```csharp
  await Source
-	.FromStream(memoryStream, (int)2048, 0)
+	.FromStream(memoryStream, 2048, 0) //buffer size and initial offset
 	.And()
 	.FromHttpGet("https://google.com", httpClient)
 	.ToConsole(bytes => Encoding.UTF8.GetString(bytes)) //Entwined results from both stream and HTTP
