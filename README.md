@@ -1,4 +1,4 @@
-# FromAToB
+# FromAToB (Moving data from A To B)
 
 A simple library that will allow you to move data from one or many data sources to one or many destinations. This project is mostly created to increase my knowledge with [Rx](https://github.com/dotnet/reactive).
 
