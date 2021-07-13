@@ -1,6 +1,8 @@
 using FluentAssertions;
-using NUnit.Framework;
 using FromAToB;
+using Moq;
+using Moq.Protected;
+using NUnit.Framework;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
@@ -9,9 +11,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Moq;
-using Moq.Protected;
-using NUnit.Framework.Constraints;
 
 namespace FromAToBTests
 {
