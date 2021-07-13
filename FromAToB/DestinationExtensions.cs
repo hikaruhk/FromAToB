@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 
 namespace FromAToB
 {
@@ -11,5 +12,11 @@ namespace FromAToB
         public static IDestination ToConsole([DisallowNull] this IDestination @destination,
             Func<byte[], string> message) =>
             new Destination().ToConsole(@destination, message);
+
+        public static IDestination ToStream(this ISource @source, Stream stream) =>
+            new Destination().ToStream(@source, stream);
+
+        public static IDestination ToStream(this IDestination @destination, Stream stream) =>
+            new Destination().ToStream(@destination, stream);
     }
 }

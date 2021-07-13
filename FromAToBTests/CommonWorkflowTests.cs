@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using Moq.Protected;
+using NUnit.Framework.Constraints;
 
 namespace FromAToBTests
 {
@@ -197,6 +198,33 @@ namespace FromAToBTests
                     $"Second:{originalFirstMessage}",
                     $"First:{originalSecondMessage}",
                     $"Second:{originalSecondMessage}");
+        }
+
+        [Test]
+        public async Task ShouldLoadFromSourceStreamAndWrite()
+        {
+            var faker = new Bogus.DataSets.Lorem();
+            var tokenSource = new CancellationTokenSource();
+            var originalMessage = faker.Sentences(1);
+            var bytes = Encoding.UTF8.GetBytes(originalMessage);
+
+            await using var memoryStream = new MemoryStream(bytes);
+            await using var outgoingStream = new MemoryStream();
+
+            var pipeline = Source
+                .FromStream(memoryStream, (int)memoryStream.Length, 0)
+                .ToStream(outgoingStream);
+
+            await pipeline.Start(tokenSource.Token);
+
+            outgoingStream.Seek(0, SeekOrigin.Begin);
+            using var streamReader = new StreamReader(outgoingStream);
+
+            var results = await streamReader.ReadToEndAsync();
+
+            results
+                .Should()
+                .Be(originalMessage);
         }
     }
 }
