@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -19,6 +20,45 @@ namespace FromAToB
             SubscriptionDestinations = new List<Func<IConnectableObservable<byte[]>, IDisposable>>();
         }
 
+        public IDestination ToStream([DisallowNull] ISource source, Stream stream)
+        {
+            _ = source ?? throw new ArgumentNullException(nameof(source));
+
+            return new Destination
+            {
+                Source = source,
+                SubscriptionDestinations = new List<Func<IConnectableObservable<byte[]>, IDisposable>>
+                {
+                    connectable =>
+                    {
+                        return connectable.Subscribe(
+                            async sub => await stream.WriteAsync(sub));
+                    }
+                }
+            };
+        }
+
+        public IDestination ToStream(
+            [DisallowNull] IDestination destination,
+            [DisallowNull] Stream stream)
+        {
+            _ = destination ?? throw new ArgumentNullException(nameof(destination));
+
+            return new Destination
+            {
+                Source = destination.Source,
+                SubscriptionDestinations = new List<Func<IConnectableObservable<byte[]>, IDisposable>>(
+                    destination.SubscriptionDestinations)
+                {
+                    connectable =>
+                    {
+                        return connectable.Subscribe(
+                            async sub => await stream.WriteAsync(sub));
+                    }
+                }
+            };
+        }
+
         public IDestination ToConsole(
             [DisallowNull] ISource source,
             [DisallowNull] Func<byte[], string> message)
@@ -34,13 +74,14 @@ namespace FromAToB
                     connectable =>
                     {
                         return connectable.Subscribe(
-                            sub => System.Diagnostics.Debug.WriteLine(message(sub)));
+                            sub => Console.WriteLine(message(sub)));
                     }
                 }
             };
         }
 
-        public IDestination ToConsole([DisallowNull] IDestination destination,
+        public IDestination ToConsole(
+            [DisallowNull] IDestination destination,
             [DisallowNull] Func<byte[], string> message)
         {
             _ = destination ?? throw new ArgumentNullException(nameof(destination));
@@ -55,7 +96,7 @@ namespace FromAToB
                     connectable =>
                     {
                         return connectable.Subscribe(
-                            sub => System.Diagnostics.Debug.WriteLine(message(sub)));
+                            sub => Console.WriteLine(message(sub)));
                     }
                 }
             };
