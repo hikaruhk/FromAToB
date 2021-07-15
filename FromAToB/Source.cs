@@ -61,7 +61,9 @@ namespace FromAToB
             return source.Wait();
         }
 
-        public static ISource MergeSource<T>(IObservable<T> first, IObservable<T> second) =>
-            new FromSource<T>(first.Merge(second));
+        public static ISource MergeSource<T>(IObservable<T> first, IObservable<T> second)
+        {
+            return new FromSource<T>(first.Merge(second));
+        }
     }
 }
