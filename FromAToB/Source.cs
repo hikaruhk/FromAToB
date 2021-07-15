@@ -19,6 +19,7 @@ namespace FromAToB
                         () => bytesRead != 0,
                         Observable
                             .FromAsync(async () => await stream.ReadAsync(buffer, offset, bufferSize))
+                            .Retry(5)
                             .Do(d => { bytesRead = d; })
                             .Where(bytesRead => bytesRead != 0)
                             .Select(s => buffer[..s]));

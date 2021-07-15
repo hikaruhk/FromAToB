@@ -28,7 +28,7 @@ namespace FromAToBTests
 
             await using var memoryStream = new MemoryStream(bytes);
 
-            var source = Source.FromStream(memoryStream, (int) memoryStream.Length, 0);
+            var source = Source.FromStream(memoryStream, (int) memoryStream.Length);
 
             var firstDestination = source.ToConsole(data =>
             {
@@ -70,9 +70,9 @@ namespace FromAToBTests
             await using var secondMemoryStream = new MemoryStream(secondBytes);
 
             var source = Source
-                .FromStream(firstMemoryStream, (int) firstMemoryStream.Length, 0)
+                .FromStream(firstMemoryStream, (int) firstMemoryStream.Length)
                 .And()
-                .FromStream(secondMemoryStream, (int) secondMemoryStream.Length, 0);
+                .FromStream(secondMemoryStream, (int) secondMemoryStream.Length);
 
             var firstDestination = source.ToConsole(data =>
             {
@@ -110,7 +110,7 @@ namespace FromAToBTests
 
             await using var memoryStream = new MemoryStream(bytes);
 
-            var source = Source.FromStream(memoryStream, (int) memoryStream.Length, 0);
+            var source = Source.FromStream(memoryStream, (int) memoryStream.Length);
 
             var firstDestination = source.ToConsole(data =>
             {
@@ -167,7 +167,7 @@ namespace FromAToBTests
             await using var memoryStream = new MemoryStream(bytes);
 
             var source = Source
-                .FromStream(memoryStream, (int) memoryStream.Length, 0)
+                .FromStream(memoryStream, (int) memoryStream.Length)
                 .And()
                 .FromHttpGet(
                     "https://rickandmortyapi.com/api/character/",
@@ -211,7 +211,7 @@ namespace FromAToBTests
             await using var outgoingStream = new MemoryStream();
 
             var pipeline = Source
-                .FromStream(memoryStream, (int)memoryStream.Length, 0)
+                .FromStream(memoryStream, (int)memoryStream.Length)
                 .ToStream(outgoingStream);
 
             await pipeline.Start(tokenSource.Token);
