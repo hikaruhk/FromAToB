@@ -1,47 +1,30 @@
 using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using Bogus.DataSets;
 using FluentAssertions;
 using FromAToB;
 using NUnit.Framework;
+using System.Collections.Concurrent;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace FromAToBTests
 {
-    public class FlakyMemoryStream : MemoryStream
-    {
-        public FlakyMemoryStream()
-        {
-        }
-
-        public FlakyMemoryStream(byte[] bytes) : base(bytes)
-        {
-
-        }
-
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            return count % 5 == 0 
-                ? throw new InvalidOperationException("???")
-                : base.ReadAsync(buffer, offset, count, cancellationToken);
-        }
-    }
-
     [TestFixture]
     public class RecoveryWorkflowTests
     {
         [Test]
         public async Task ShouldLoadFromSourceStreamWithRetry()
         {
-            var faker = new Bogus.DataSets.Lorem();
+            var faker = new Lorem();
             var messages = new ConcurrentBag<string>();
-            var tokenSource = new CancellationTokenSource();
             var originalMessage = faker.Sentences(1);
             var bytes = Encoding.UTF8.GetBytes(originalMessage);
 
-            await using var memoryStream = new FlakyMemoryStream(bytes);
+            using var tokenSource = new CancellationTokenSource();
+            await using var memoryStream = new FlakyMemoryStream(
+                bytes,
+                false, false, false, false);
 
             await Source
                 .FromStream(memoryStream, (int)memoryStream.Length)

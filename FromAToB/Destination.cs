@@ -114,7 +114,6 @@ namespace FromAToB
 
                 while (!cancellationToken.IsCancellationRequested && !isComplete)
                 {
-
                     await Task.Delay(100, cancellationToken);
                 }
             }
