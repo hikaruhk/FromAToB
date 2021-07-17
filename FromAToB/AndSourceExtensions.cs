@@ -11,8 +11,8 @@ namespace FromAToB
             int bufferSize = 2048,
             int offset = 0)
         {
-            var firstSource = (FromSource<byte[]>) @this.GetParent;
-            var secondSource = (FromSource<byte[]>) Source.FromStream(stream, bufferSize, offset);
+            var firstSource = @this.GetParent;
+            var secondSource = Source.FromStream(stream, bufferSize, offset);
 
             return Source.MergeSource(firstSource.InternalSource, secondSource.InternalSource);
         }
@@ -21,8 +21,8 @@ namespace FromAToB
             this IAndSource @this,
             string path)
         {
-            var firstSource = (FromSource<byte[]>)@this.GetParent;
-            var secondSource = (FromSource<byte[]>)Source.FromHttpGet(path);
+            var firstSource = @this.GetParent;
+            var secondSource = Source.FromHttpGet(path);
 
             return Source.MergeSource(firstSource.InternalSource, secondSource.InternalSource);
         }
@@ -32,10 +32,13 @@ namespace FromAToB
             string path,
             HttpClient client)
         {
-            var firstSource = (FromSource<byte[]>)@this.GetParent;
-            var secondSource = (FromSource<byte[]>)Source.FromHttpGet(path, client);
+            var firstSource = @this.GetParent;
+            var secondSource = Source.FromHttpGet(path, client);
 
             return Source.MergeSource(firstSource.InternalSource, secondSource.InternalSource);
         }
+
+        public static IAndSource And(this ISource @source) =>
+            new AndSource(@source);
     }
 }

@@ -11,6 +11,14 @@ namespace FromAToB
     /// </summary>
     public class Source : ISource
     {
+        IObservable<byte[]> ISource.InternalSource { get; set; }
+
+        private Source(IObservable<byte[]> internalSource)
+        {
+            ISource @this = this;
+            @this.InternalSource = internalSource;
+        }
+
         /// <summary>
         ///     Creates a data source using a stream that can push data to a destination.
         /// </summary>
@@ -40,7 +48,7 @@ namespace FromAToB
                 })
                 .ObserveOn(ThreadPoolScheduler.Instance);
 
-            return new FromSource<byte[]>(source);
+            return new Source(source);
         }
 
         /// <summary>
@@ -112,18 +120,18 @@ namespace FromAToB
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="first">The first observable</param>
-        /// <param name="second">All of the second observables</param>
+        /// <param name="others">All of the other observables</param>
         /// <returns></returns>
-        public static ISource MergeSource<T>(IObservable<T> first, params IObservable<T>[] second)
+        public static ISource MergeSource(IObservable<byte[]> first, params IObservable<byte[]>[] others)
         {
             _ = first ?? throw new ArgumentNullException(nameof(first));
-            _ = second ?? throw new ArgumentNullException(nameof(second));
+            _ = others ?? throw new ArgumentNullException(nameof(others));
 
-            if (second.Length == 0) return new FromSource<T>(first);
+            if (others.Length == 0) return new Source(first);
 
-            var mergedSource = (FromSource<T>)MergeSource(first, second[..^1]);
+            var mergedSource = MergeSource(first, others[..^1]);
 
-            return new FromSource<T>(mergedSource.InternalSource.Merge(second[^1]));
+            return new Source(mergedSource.InternalSource.Merge(others[^1]));
         }
     }
 }

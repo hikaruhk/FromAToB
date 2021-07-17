@@ -101,9 +101,8 @@ namespace FromAToB
             IDisposable disposable = default;
             try
             {
-                var source = Source as FromSource<byte[]>;
                 var isComplete = false;
-                var publisher = source
+                var publisher = Source
                     .InternalSource
                     .Finally(() => isComplete = true)
                     .Publish();
@@ -137,8 +136,7 @@ namespace FromAToB
 
             try
             {
-                var source = Source as FromSource<byte[]>;
-                var publisher = source.InternalSource.Publish();
+                var publisher = Source.InternalSource.Publish();
                 subs.AddRange(SubscriptionDestinations.Select(sub => sub(publisher)));
 
                 _ = await publisher;
