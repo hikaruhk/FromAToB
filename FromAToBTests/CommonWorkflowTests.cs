@@ -1,6 +1,3 @@
-using FluentAssertions;
-using NUnit.Framework;
-using FromAToB;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
@@ -9,9 +6,12 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Bogus.DataSets;
+using FluentAssertions;
+using FromAToB;
 using Moq;
 using Moq.Protected;
-using NUnit.Framework.Constraints;
+using NUnit.Framework;
 
 namespace FromAToBTests
 {
@@ -21,7 +21,7 @@ namespace FromAToBTests
         [Test]
         public async Task ShouldLoadFromSourceStream()
         {
-            var faker = new Bogus.DataSets.Lorem();
+            var faker = new Lorem();
             var messages = new ConcurrentBag<string>();
             var tokenSource = new CancellationTokenSource();
             var originalMessage = faker.Sentences(1);
@@ -29,7 +29,7 @@ namespace FromAToBTests
 
             await using var memoryStream = new MemoryStream(bytes);
 
-            var source = Source.FromStream(memoryStream, (int) memoryStream.Length, 0);
+            var source = Source.FromStream(memoryStream, (int) memoryStream.Length);
 
             var firstDestination = source.ToConsole(data =>
             {
@@ -58,7 +58,7 @@ namespace FromAToBTests
         [Test]
         public async Task ShouldLoadFromMultipleSourceStream()
         {
-            var faker = new Bogus.DataSets.Lorem();
+            var faker = new Lorem();
             var messages = new ConcurrentBag<string>();
             var tokenSource = new CancellationTokenSource();
             tokenSource.CancelAfter(TimeSpan.FromSeconds(1));
@@ -71,9 +71,9 @@ namespace FromAToBTests
             await using var secondMemoryStream = new MemoryStream(secondBytes);
 
             var source = Source
-                .FromStream(firstMemoryStream, (int) firstMemoryStream.Length, 0)
+                .FromStream(firstMemoryStream, (int) firstMemoryStream.Length)
                 .And()
-                .FromStream(secondMemoryStream, (int) secondMemoryStream.Length, 0);
+                .FromStream(secondMemoryStream, (int) secondMemoryStream.Length);
 
             var firstDestination = source.ToConsole(data =>
             {
@@ -104,14 +104,14 @@ namespace FromAToBTests
         [Test]
         public async Task ShouldLoadFromSourceWithoutToken()
         {
-            var faker = new Bogus.DataSets.Lorem();
+            var faker = new Lorem();
             var messages = new ConcurrentBag<string>();
             var originalMessage = faker.Sentences(1);
             var bytes = Encoding.UTF8.GetBytes(originalMessage);
 
             await using var memoryStream = new MemoryStream(bytes);
 
-            var source = Source.FromStream(memoryStream, (int) memoryStream.Length, 0);
+            var source = Source.FromStream(memoryStream, (int) memoryStream.Length);
 
             var firstDestination = source.ToConsole(data =>
             {
@@ -139,7 +139,7 @@ namespace FromAToBTests
         [Test]
         public async Task ShouldLoadFromMixedSource()
         {
-            var faker = new Bogus.DataSets.Lorem();
+            var faker = new Lorem();
             var messages = new ConcurrentBag<string>();
             var originalFirstMessage = faker.Sentences(1);
             var originalSecondMessage = faker.Sentences(1);
@@ -168,7 +168,7 @@ namespace FromAToBTests
             await using var memoryStream = new MemoryStream(bytes);
 
             var source = Source
-                .FromStream(memoryStream, (int) memoryStream.Length, 0)
+                .FromStream(memoryStream, (int) memoryStream.Length)
                 .And()
                 .FromHttpGet(
                     "https://rickandmortyapi.com/api/character/",
@@ -203,7 +203,7 @@ namespace FromAToBTests
         [Test]
         public async Task ShouldLoadFromSourceStreamAndWrite()
         {
-            var faker = new Bogus.DataSets.Lorem();
+            var faker = new Lorem();
             var tokenSource = new CancellationTokenSource();
             var originalMessage = faker.Sentences(1);
             var bytes = Encoding.UTF8.GetBytes(originalMessage);
@@ -212,7 +212,7 @@ namespace FromAToBTests
             await using var outgoingStream = new MemoryStream();
 
             var pipeline = Source
-                .FromStream(memoryStream, (int)memoryStream.Length, 0)
+                .FromStream(memoryStream, (int) memoryStream.Length)
                 .ToStream(outgoingStream);
 
             await pipeline.Start(tokenSource.Token);

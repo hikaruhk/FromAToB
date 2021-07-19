@@ -20,9 +20,10 @@ namespace FromAToB
             SubscriptionDestinations = new List<Func<IConnectableObservable<byte[]>, IDisposable>>();
         }
 
-        public IDestination ToStream([DisallowNull] ISource source, Stream stream)
+        public IDestination ToStream([DisallowNull]ISource source, [DisallowNull]Stream stream)
         {
             _ = source ?? throw new ArgumentNullException(nameof(source));
+            _ = stream ?? throw new ArgumentNullException(nameof(stream));
 
             return new Destination
             {
@@ -37,12 +38,10 @@ namespace FromAToB
                 }
             };
         }
-
-        public IDestination ToStream(
-            [DisallowNull] IDestination destination,
-            [DisallowNull] Stream stream)
+        public IDestination ToStream([DisallowNull] IDestination destination, [DisallowNull] Stream stream)
         {
             _ = destination ?? throw new ArgumentNullException(nameof(destination));
+            _ = stream ?? throw new ArgumentNullException(nameof(stream));
 
             return new Destination
             {
@@ -58,10 +57,7 @@ namespace FromAToB
                 }
             };
         }
-
-        public IDestination ToConsole(
-            [DisallowNull] ISource source,
-            [DisallowNull] Func<byte[], string> message)
+        public IDestination ToConsole([DisallowNull] ISource source, [DisallowNull] Func<byte[], string> message)
         {
             _ = source ?? throw new ArgumentNullException(nameof(source));
             _ = message ?? throw new ArgumentNullException(nameof(message));
@@ -79,10 +75,7 @@ namespace FromAToB
                 }
             };
         }
-
-        public IDestination ToConsole(
-            [DisallowNull] IDestination destination,
-            [DisallowNull] Func<byte[], string> message)
+        public IDestination ToConsole([DisallowNull] IDestination destination, [DisallowNull] Func<byte[], string> message)
         {
             _ = destination ?? throw new ArgumentNullException(nameof(destination));
             _ = message ?? throw new ArgumentNullException(nameof(message));
@@ -108,9 +101,8 @@ namespace FromAToB
             IDisposable disposable = default;
             try
             {
-                var source = Source as FromSource<byte[]>;
                 var isComplete = false;
-                var publisher = source
+                var publisher = Source
                     .InternalSource
                     .Finally(() => isComplete = true)
                     .Publish();
@@ -121,7 +113,6 @@ namespace FromAToB
 
                 while (!cancellationToken.IsCancellationRequested && !isComplete)
                 {
-
                     await Task.Delay(100, cancellationToken);
                 }
             }
@@ -145,8 +136,7 @@ namespace FromAToB
 
             try
             {
-                var source = Source as FromSource<byte[]>;
-                var publisher = source.InternalSource.Publish();
+                var publisher = Source.InternalSource.Publish();
                 subs.AddRange(SubscriptionDestinations.Select(sub => sub(publisher)));
 
                 _ = await publisher;
