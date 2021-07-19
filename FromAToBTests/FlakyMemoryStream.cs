@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -11,7 +12,7 @@ namespace FromAToBTests
     /// </summary>
     public class FlakyMemoryStream : MemoryStream
     {
-        private readonly Queue<bool> _shouldThrowQueue = new Queue<bool>();
+        private readonly ConcurrentQueue<bool> _shouldThrowQueue = new ConcurrentQueue<bool>();
         public FlakyMemoryStream()
         {
         }
@@ -42,7 +43,8 @@ namespace FromAToBTests
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return _shouldThrowQueue.Count > 0 && _shouldThrowQueue.Dequeue()
+            return _shouldThrowQueue.Count > 0 
+                   && _shouldThrowQueue.TryDequeue(out var result) && result
                 ? throw new AccessViolationException("???")
                 : base.ReadAsync(buffer, offset, count, cancellationToken);
         }

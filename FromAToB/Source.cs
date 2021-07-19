@@ -24,11 +24,13 @@ namespace FromAToB
         /// </summary>
         /// <param name="stream">A stream</param>
         /// <param name="bufferSize">Buffer size, defaults to 2048</param>
+        /// <param name="retryCount">How many times to retry before giving up</param>
         /// <param name="offset">The offset to read from every read operation</param>
         /// <returns>A source object</returns>
         public static ISource FromStream(
             Stream stream,
             int bufferSize = 2048,
+            int retryCount = 1,
             int offset = 0)
         {
             _ = stream ?? throw new ArgumentNullException(nameof(stream));
@@ -42,6 +44,8 @@ namespace FromAToB
                         () => bytesRead != 0,
                         Observable
                             .FromAsync(async () => await stream.ReadAsync(buffer, offset, bufferSize))
+                            .Retry(retryCount)
+                            .Catch(Observable.Return(0))
                             .Do(d => { bytesRead = d; })
                             .Where(bytesRead => bytesRead != 0)
                             .Select(s => buffer[..s]));
@@ -56,6 +60,7 @@ namespace FromAToB
         /// </summary>
         /// <param name="path">A URI</param>
         /// <param name="client">A client</param>
+        /// <param name="retryCount">How many times to retry before giving up</param>
         /// <param name="bufferSize">Buffer size, defaults to 2048</param>
         /// <param name="offset">The offset to read from every read operation</param>
         /// <returns>A source object</returns>
@@ -63,6 +68,7 @@ namespace FromAToB
             string path,
             HttpClient client,
             int bufferSize = 2048,
+            int retryCount = 1,
             int offset = 0)
         {
             _ = string.IsNullOrWhiteSpace(path)
@@ -77,7 +83,11 @@ namespace FromAToB
                 {
                     var stream = await client.GetStreamAsync(path);
 
-                    return FromStream(stream, bufferSize, offset);
+                    return FromStream(
+                        stream,
+                        bufferSize,
+                        retryCount,
+                        offset);
                 });
             });
 
@@ -89,11 +99,13 @@ namespace FromAToB
         /// </summary>
         /// <param name="path">A URI</param>
         /// <param name="bufferSize">Buffer size, defaults to 2048</param>
+        /// <param name="retryCount">How many times to retry before giving up</param>
         /// <param name="offset">The offset to read from every read operation</param>
         /// <returns>A source object</returns>
         public static ISource FromHttpGet(
             string path,
             int bufferSize = 2048,
+            int retryCount = 1,
             int offset = 0)
         {
             _ = string.IsNullOrWhiteSpace(path)
@@ -108,7 +120,7 @@ namespace FromAToB
 
                     var stream = await httpClient.GetStreamAsync(path);
 
-                    return FromStream(stream, bufferSize, offset);
+                    return FromStream(stream, retryCount, bufferSize, offset);
                 });
             });
 
